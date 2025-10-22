@@ -22,6 +22,31 @@ const serviceDetails = {
     }
 };
 
+/* --- START: Mobile Navigation Toggle --- */
+
+// Get the elements we added to the HTML
+const navToggle = document.getElementById('navToggle');
+const navLinks = document.querySelector('.nav-links');
+const allNavLinks = document.querySelectorAll('.nav-links a');
+
+if (navToggle && navLinks) {
+    // When the hamburger button is clicked...
+    navToggle.addEventListener('click', () => {
+        //...toggle the '.active' class on the nav-links list
+        navLinks.classList.toggle('active');
+    });
+}
+
+// Add this to close the menu when a link is clicked
+allNavLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        // Check if the mobile menu is active before closing
+        if (navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+        }
+    });
+});
+
 // Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
