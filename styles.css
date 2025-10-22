@@ -1391,3 +1391,202 @@ body {
 .policy-content::-webkit-scrollbar-thumb:hover {
     background: rgba(202, 158, 122, 0.5);
 }
+/* --- START: Mobile Responsive Code --- */
+
+
+/* 1. Style the new Nav Logo */
+.nav-logo {
+    display: none; /* HIDE ON DESKTOP */
+    color: #ca9e7a;
+    text-decoration: none;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+}
+
+/* 2. Style the new Nav Toggle (Hamburger Button) */
+.nav-toggle {
+    display: none; /* Hide it on desktop by default */
+    background: transparent;
+    border: 1px solid rgba(202, 158, 122, 0.3);
+    color: #ca9e7a;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1001; /* Make sure it's above the nav links */
+}
+
+
+/* 3. Main Media Query for Tablets and Phones (992px and smaller) */
+@media (max-width: 992px) {
+
+    /* --- NAVIGATION --- */
+    .nav {
+        /* Change padding for smaller screens */
+        padding: 20px 40px;
+        height: 80px; /* Make nav bar shorter */
+        /* Position the logo and toggle */
+        justify-content: flex-end; 
+    }
+
+    .nav-logo {
+    display: none; /* SHOW ON MOBILE */
+}
+
+    .nav-toggle {
+        display: block; /* Show the hamburger button */
+    }
+
+    .nav-links {
+        /* This creates the full-screen mobile menu */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh; /* Full viewport height */
+        background: #110705;
+        
+        /* Stack the links vertically */
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+
+        /* Hide it by default */
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-links.active {
+        /* This class will be added by JavaScript to show the menu */
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    .nav-links a {
+        font-size: 20px; /* Make links bigger for tapping */
+    }
+
+    .hero {
+        margin-top: 80px; /* Match new nav height */
+        height: 50vh;
+    }
+
+    /* --- HERO TEXT --- */
+    .hero-title {
+        font-size: 60px; /* Drastically reduce font size */
+        letter-spacing: 8px;
+        margin-bottom: -100px;
+        margin-left: 0; /* Remove the left margin */
+    }
+
+    .hero-subtitle {
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    /* --- GENERAL SECTIONS --- */
+    .section {
+        /* Reduce padding on all sections */
+        padding: 80px 40px;
+        min-height: auto; /* Allow sections to be shorter */
+    }
+
+    .section-title {
+        font-size: 42px; /* Reduce all section titles */
+    }
+
+    .section-text {
+        font-size: 18px; /* Make text slightly smaller */
+    }
+
+    /* --- GRIDS --- */
+    .companies-grid {
+        /* Stack the cards */
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    /* --- BOOKING MODAL --- */
+    .modal-content {
+        /* Allow modal to be almost full width */
+        width: 90%;
+        padding: 30px 20px;
+    }
+    
+    .appointment-options {
+        /* Stack the duration options */
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Undo the desktop form alignment */
+    .booking-form .form-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .booking-form .form-label {
+        flex-basis: auto;
+        text-align: left;
+        font-size: 11px;
+    }
+
+    .booking-form .form-group:has(textarea) .form-label {
+        padding-top: 0;
+    }
+
+    /* --- FOOTER --- */
+    .footer {
+        padding: 40px;
+    }
+    .footer-content {
+        /* Stack the left and right footer sections */
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+    .footer-left {
+        align-items: center; /* Center the text */
+    }
+}
+
+
+/* 4. Extra Media Query for Small Phones (576px and smaller) */
+@media (max-width: 576px) {
+    .nav {
+        padding: 20px; /* Even less padding */
+    }
+
+    .section {
+        padding: 60px 20px;
+    }
+
+    .hero-title {
+        font-size: 42px;
+        letter-spacing: 6px;
+    }
+
+    .section-title {
+        font-size: 32px;
+    }
+
+    .section-text {
+        font-size: 16px;
+    }
+
+    /* Stack calendar and time slots */
+    .time-slots {
+        grid-template-columns: 1fr 1fr; /* Two columns for time */
+    }
+}
+
+/* --- END: Mobile Responsive Code --- */
