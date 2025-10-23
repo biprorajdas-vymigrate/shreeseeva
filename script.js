@@ -480,7 +480,7 @@ window.addEventListener('click', (e) => {
 // Contact form submission
 const contactForm = document.getElementById('contactForm');
 // --- PASTE YOUR NEW N8N WEBHOOK URL HERE ---
-const n8nContactWebhookUrl = 'https://n8n.srv1068626.hstgr.cloud/webhook/YOUR-NEW-WEBHOOK-ID';
+const n8nContactWebhookUrl = 'https://n8n.srv1068626.hstgr.cloud/webhook/51a45f27-5307-4454-b452-937d18a5d0f7';
 // ------------------------------------------
 
 if (contactForm) {
