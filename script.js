@@ -479,10 +479,19 @@ window.addEventListener('click', (e) => {
 
 // Contact form submission
 const contactForm = document.getElementById('contactForm');
+// --- PASTE YOUR NEW N8N WEBHOOK URL HERE ---
+const n8nContactWebhookUrl = 'https://n8n.srv1068626.hstgr.cloud/webhook/YOUR-NEW-WEBHOOK-ID';
+// ------------------------------------------
+
 if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', async function(e) { // <-- Made this async
         e.preventDefault();
         
+        // Get the submit button to show a loading state
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+
         const nameEl = document.getElementById('name');
         const emailEl = document.getElementById('email');
         const phoneEl = document.getElementById('phone');
@@ -494,16 +503,36 @@ if (contactForm) {
             email: emailEl ? emailEl.value : '',
             phone: phoneEl ? phoneEl.value : '',
             company: companyEl ? companyEl.value : '',
-            message: messageEl ? messageEl.value : ''
+            message: messageEl ? messageEl.value : '',
+            timestamp: new Date().toISOString()
         };
 
-        console.log('Form submitted:', formData);
-        alert('Thank you for reaching out! We will get back to you shortly.');
-        contactModal.classList.remove('active');
-        contactForm.reset();
+        try {
+            const response = await fetch(n8nContactWebhookUrl, { // <-- Use the new webhook URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                alert('Thank you for reaching out! We will get back to you shortly.');
+                contactModal.classList.remove('active');
+                contactForm.reset();
+            } else {
+                throw new Error('Failed to submit form');
+            }
+        } catch (error) {
+            console.error('Error submitting contact form:', error);
+            alert('There was an error submitting your message. Please try again.');
+        } finally {
+            // Re-enable the button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+        }
     });
 }
-
 // Carousel functionality
 let currentSlide = 0;
 const carousel = document.getElementById('carouselInner');
