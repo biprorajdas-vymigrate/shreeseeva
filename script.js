@@ -1,665 +1,1581 @@
-// Service details
-const serviceDetails = {
-    consulting: {
-        title: 'Strategic Consulting',
-        description: 'Comprehensive business consulting services to help your organization achieve its strategic objectives. I work with leadership teams to develop actionable strategies, optimize operations, and drive sustainable growth through data-driven insights and proven methodologies.'
-    },
-    advocacy: {
-        title: 'Advocacy Services',
-        description: 'Expert advocacy to amplify your voice and advance your organizational mission. I help clients navigate stakeholder landscapes, build coalitions, craft compelling narratives, and implement effective advocacy campaigns that drive meaningful change and policy outcomes.'
-    },
-    legal: {
-        title: 'Legal Advisory',
-        description: 'Strategic legal guidance for complex business matters, regulatory compliance, and risk management. Drawing on extensive experience, I provide practical counsel on corporate governance, contracts, intellectual property, and dispute resolution to protect your interests and support your objectives.'
-    },
-    policy: {
-        title: 'Policy Advisory',
-        description: 'Comprehensive policy development and analysis services for organizations navigating regulatory environments. I assist in crafting policy positions, conducting impact assessments, engaging with policymakers, and developing advocacy strategies to influence policy outcomes aligned with your goals.'
-    },
-    government: {
-        title: 'Government Relations',
-        description: 'Navigate the complexities of government partnerships and regulatory landscapes. I provide strategic counsel on stakeholder engagement, regulatory affairs, public-private partnerships, and government procurement to help you build productive relationships and achieve your policy objectives.'
-    }
-};
+/* --- START: CSS Variables --- */
+:root {
+    --primary-color: #ca9e7a;
+    --primary-light: #87644b;
+    --primary-dark: #835533;
+    --bg-dark: #110705;
+    --bg-light: #1a0f0d;
+    --text-muted: #837469;
+    --border-color-light: rgba(202, 158, 122, 0.2);
+    --border-color-medium: rgba(202, 158, 122, 0.3);
+    --border-color-strong: #ca9e7a;
+    --bg-accent-light: rgba(135, 100, 75, 0.05);
+    --bg-accent-medium: rgba(135, 100, 75, 0.1);
+    --bg-accent-strong: rgba(202, 158, 122, 0.2);
+    --font-body: 'Georgia', serif;
+    --font-heading: 'Arial', sans-serif;
+    --success-bg: rgba(76, 175, 80, 0.2);
+    --success-border: rgba(76, 175, 80, 0.5);
+    --success-text: #4caf50;
+    --error-bg: rgba(244, 67, 54, 0.2);
+    --error-border: rgba(244, 67, 54, 0.5);
+    --error-text: #f44336;
+}
+/* --- END: CSS Variables --- */
 
-/* --- START: Mobile Navigation Toggle --- */
-
-// Get the elements we added to the HTML
-const navToggle = document.getElementById('navToggle');
-const navLinks = document.querySelector('.nav-links');
-const allNavLinks = document.querySelectorAll('.nav-links a');
-
-if (navToggle && navLinks) {
-    // When the hamburger button is clicked...
-    navToggle.addEventListener('click', () => {
-        //...toggle the '.active' class on the nav-links list
-        navLinks.classList.toggle('active');
-    });
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-// Add this to close the menu when a link is clicked
-allNavLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        // Check if the mobile menu is active before closing
-        if (navLinks.classList.contains('active')) {
-            navLinks.classList.remove('active');
-        }
-    });
-});
-
-// Smooth scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-// Intersection Observer for sections
-const observerOptions = {
-    threshold: 0.15,
-    rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, observerOptions);
-
-document.querySelectorAll('.section').forEach(section => {
-    observer.observe(section);
-});
-
-// Staggered animation for cards
-const cardObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-            setTimeout(() => {
-                entry.target.classList.add('visible');
-            }, index * 150);
-        }
-    });
-}, observerOptions);
-
-const cards = document.querySelectorAll('.company-card, .service-card');
-cards.forEach(item => {
-    cardObserver.observe(item);
-});
-
-// Service modal functionality
-const serviceModal = document.getElementById('serviceModal');
-const closeServiceModal = document.getElementById('closeServiceModal');
-const serviceCards = document.querySelectorAll('.service-card');
-let currentService = '';
-let selectedDate = null;
-let selectedTime = null;
-let selectedDuration = null;
-let currentMonth = new Date();
-
-serviceCards.forEach(card => {
-    card.addEventListener('click', function() {
-        const service = this.dataset.service;
-        currentService = service;
-        if (serviceDetails[service]) {
-            const details = serviceDetails[service];
-            document.getElementById('serviceTitle').textContent = details.title;
-            document.getElementById('serviceDescription').textContent = details.description;
-            serviceModal.classList.add('active');
-            
-            // Reset form and show step 1
-            const form = document.getElementById('bookingForm');
-            if (form) form.reset();
-            const response = document.getElementById('bookingResponse');
-            if (response) {
-                response.style.display = 'none';
-                response.className = 'form-response';
-            }
-            showStep(1);
-            selectedDate = null;
-            selectedTime = null;
-            selectedDuration = null;
-            currentMonth = new Date();
-        }
-    });
-});
-
-if (closeServiceModal) {
-    closeServiceModal.addEventListener('click', () => {
-        serviceModal.classList.remove('active');
-    });
+body {
+    font-family: var(--font-body);
+    color: var(--primary-color);
+    overflow-x: hidden;
+    background: var(--bg-dark);
 }
 
-// Multi-step booking flow
-function showStep(stepNumber) {
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    
-    if (step1) step1.style.display = stepNumber === 1 ? 'block' : 'none';
-    if (step2) step2.style.display = stepNumber === 2 ? 'block' : 'none';
-    if (step3) step3.style.display = stepNumber === 3 ? 'block' : 'none';
-    
-    if (stepNumber === 2) {
-        renderCalendar();
-    }
-    
-    if (stepNumber === 3) {
-        updateSummary();
-    }
+/* Navigation */
+.nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 40px 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 1.5s ease 0.5s forwards;
+    background: rgba(17, 7, 5, 0.9); /* Keep rgba for transparency */
+    backdrop-filter: blur(10px);
+    height: 120px;
 }
 
-// Duration selection
-const timeOptions = document.querySelectorAll('.time-option');
-timeOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        const radio = this.querySelector('input[type="radio"]');
-        if (radio) {
-            radio.checked = true;
-            selectedDuration = radio.value;
-            timeOptions.forEach(opt => opt.classList.remove('selected'));
-            this.classList.add('selected');
-            
-            // Auto-advance to step 2 after short delay
-            setTimeout(() => showStep(2), 300);
-        }
-    });
-});
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
 
-// Calendar functionality
-function renderCalendar() {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    
-    // Update header
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                       'July', 'August', 'September', 'October', 'November', 'December'];
-    const monthDisplay = document.getElementById('calendarMonth');
-    if (monthDisplay) {
-        monthDisplay.textContent = monthNames[month] + ' ' + year;
-    }
-    
-    // Get first day of month and number of days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-    
-    const calendarDays = document.getElementById('calendarDays');
-    if (!calendarDays) return;
-    
-    calendarDays.innerHTML = '';
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Previous month days
-    for (let i = firstDay - 1; i >= 0; i--) {
-        const day = daysInPrevMonth - i;
-        const dayEl = createDayElement(day, 'other-month');
-        calendarDays.appendChild(dayEl);
-    }
-    
-    // Current month days
-    for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, month, day);
-        date.setHours(0, 0, 0, 0);
-        
-        const isPast = date < today;
-        const isToday = date.getTime() === today.getTime();
-        let selDate = null;
-        if (selectedDate) {
-            // This trick (adding 'T00:00:00') forces JS to parse the string in your local timezone
-            selDate = new Date(selectedDate + 'T00:00:00');
-        }
-        const isSelected = selectedDate && date.getTime() === selDate.getTime();
-        
-        const classes = [];
-        if (isPast) classes.push('disabled');
-        if (isToday) classes.push('today');
-        if (isSelected) classes.push('selected');
-        
-        const dayEl = createDayElement(day, classes.join(' '), isPast ? null : date);
-        calendarDays.appendChild(dayEl);
-    }
-    
-    // Next month days
-    const totalCells = calendarDays.children.length;
-    const remainingCells = 42 - totalCells;
-    for (let day = 1; day <= remainingCells; day++) {
-        const dayEl = createDayElement(day, 'other-month');
-        calendarDays.appendChild(dayEl);
+.nav-links {
+    display: flex;
+    gap: 80px;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    transition: all 0.5s ease;
+    font-weight: 300;
+    position: relative;
+    padding: 10px 0;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: var(--primary-color);
+    transition: width 0.5s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 120px;
+}
+
+.hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    z-index: -2;
+}
+
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    z-index: -1;
+}
+
+.hero-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    background-image: url('founderfinal.jpg');
+    background-size: cover; /* Changed for better mobile */
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+}
+
+.hero-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: heroFade 1.8s ease 1s forwards;
+    position: relative; /* Ensure z-index works */
+}
+
+@keyframes heroFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-function createDayElement(day, className, date) {
-    const dayEl = document.createElement('div');
-    dayEl.className = 'calendar-day ' + className;
-    dayEl.textContent = day;
-    
-    if (date && !className.includes('disabled')) {
-        dayEl.addEventListener('click', () => selectDate(date));
+.hero-title {
+    margin-top: 50px;
+    margin-left: 0; /* Centered */
+    font-size: 120px;
+    font-weight: 300;
+    letter-spacing: 17px;
+    text-transform: uppercase;
+    margin-bottom: 20px; /* Adjusted margin */
+    line-height: 1.1;
+    color: var(--primary-dark);
+    text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.8);
+}
+
+.hero-subtitle {
+    font-size: 16px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    font-family: var(--font-heading);
+    font-weight: 300;
+    color: var(--primary-light);
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: fadeIn 1.5s ease 2s forwards;
+}
+
+.chevron {
+    width: 30px;
+    height: 30px;
+    border-right: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    transform: rotate(45deg);
+    animation: bounce 2s infinite;
+    opacity: 0.6;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(10px); }
+}
+
+/* Content Sections */
+.section {
+    min-height: 100vh;
+    padding: 120px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    opacity: 0;
+    transform: translateY(60px);
+    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.section-content {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.section-label {
+    font-size: 12px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 60px;
+    font-family: var(--font-heading);
+    font-weight: 300;
+    color: var(--text-muted);
+}
+
+.section-title {
+    font-size: 64px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+    color: var(--primary-color);
+}
+
+.section-text {
+    font-size: 22px;
+    line-height: 1.8;
+    opacity: 0.8;
+    font-weight: 300;
+    max-width: 900px;
+    color: var(--primary-color);
+}
+
+.connect-text {
+    font-size: 22px;
+    line-height: 1.8;
+    opacity: 0.8;
+    font-weight: 300;
+    max-width: 1200px;
+    color: var(--primary-color);
+}
+
+/* About Section */
+.about {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+}
+
+/* Companies Section */
+.companies {
+    background: var(--bg-dark);
+}
+
+.companies-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 80px;
+}
+
+.company-card {
+    padding: 50px 30px;
+    border: 1px solid var(--border-color-light);
+    background: var(--bg-accent-light);
+    text-align: center;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+}
+
+.company-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.company-card:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(202, 158, 122, 0.15); /* Keep rgba for box shadow */
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.company-role {
+    font-size: 14px;
+    opacity: 0.6;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    color: var(--text-muted);
+}
+
+/* Book Appointment Section */
+.appointment {
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%);
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 60px;
+}
+
+.service-card {
+    padding: 40px 30px;
+    border: 1px solid var(--border-color-light);
+    background: var(--bg-accent-light);
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.service-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.service-card:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(202, 158, 122, 0.2); /* Keep rgba */
+}
+
+/* Service Logo Styling */
+.service-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(202, 158, 122, 0.08); /* Keep rgba */
+    border: 1px solid rgba(202, 158, 122, 0.15); /* Keep rgba */
+    border-radius: 8px;
+    transition: all 0.4s ease;
+}
+
+.service-card:hover .service-logo {
+    background: rgba(202, 158, 122, 0.15); /* Keep rgba */
+    border-color: rgba(202, 158, 122, 0.4); /* Keep rgba */
+    transform: scale(1.1);
+}
+
+.service-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.service-title {
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.service-description {
+    font-size: 14px;
+    opacity: 0.7;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+/* Modal for Service Details */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 7, 5, 0.95); /* Keep rgba */
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    overflow-y: auto;
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: var(--bg-light);
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    border: 1px solid var(--border-color-medium);
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.4s ease;
+    margin: auto;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.booking-modal {
+    max-width: 650px;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1;
+    background: none;
+    border: none;
+}
+
+.close-modal:hover {
+    color: var(--primary-light);
+    transform: rotate(90deg);
+}
+
+.modal-title {
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    letter-spacing: 2px;
+}
+
+.modal-description {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    opacity: 0.8;
+    color: var(--primary-color);
+}
+
+.appointment-options {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.time-option {
+    flex: 1;
+    padding: 20px 12px;
+    border: 1px solid var(--border-color-medium);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    background: var(--bg-accent-light);
+    position: relative;
+}
+
+.time-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.time-option label {
+    cursor: pointer;
+    display: block;
+    width: 100%;
+}
+
+.duration-time {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.duration-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.time-option:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+    transform: translateY(-3px);
+}
+
+.time-option input[type="radio"]:checked + label,
+.time-option:has(input[type="radio"]:checked) {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-strong);
+}
+
+.step-title {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+/* Calendar Styles */
+.calendar-container {
+    margin: 20px 0;
+    border: 1px solid var(--border-color-light);
+    background: var(--bg-accent-light);
+    padding: 20px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-month {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.calendar-nav {
+    background: transparent;
+    border: 1px solid var(--border-color-medium);
+    color: var(--primary-color);
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.calendar-nav:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-strong);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.weekday {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 8px 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    min-height: 250px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color-light);
+    background: var(--bg-accent-light);
+    color: var(--primary-color);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 40px;
+}
+
+.calendar-day:hover:not(.disabled):not(.other-month) {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+    transform: scale(1.05);
+}
+
+.calendar-day.selected {
+    background: var(--bg-accent-strong);
+    border-color: var(--border-color-strong);
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    border: 2px solid var(--border-color-strong);
+}
+
+.calendar-day.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.calendar-day.other-month {
+    opacity: 0.3;
+    color: var(--text-muted);
+}
+
+/* Time Slots */
+.time-slots-container {
+    margin-top: 30px;
+}
+
+.time-slots-title {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.time-slot {
+    padding: 12px;
+    border: 1px solid var(--border-color-medium);
+    background: var(--bg-accent-light);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--primary-color);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.time-slot:hover:not(.booked) {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+    transform: translateY(-2px);
+}
+
+.time-slot.selected {
+    background: var(--bg-accent-strong);
+    border-color: var(--border-color-strong);
+    font-weight: 600;
+}
+
+.time-slot.booked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* Summary Section */
+.selected-summary {
+    background: var(--bg-accent-medium);
+    border: 1px solid var(--border-color-light);
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+}
+
+.summary-value {
+    font-size: 13px;
+    color: var(--primary-color);
+    font-weight: 400;
+}
+
+/* Button Group */
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.secondary-btn {
+    flex: 1;
+    padding: 15px 30px;
+    background: transparent;
+    border: 1px solid var(--border-color-medium);
+    color: var(--primary-color);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.secondary-btn:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-strong);
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.booking-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-form .form-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+}
+
+.booking-form .form-input,
+.booking-form .form-textarea {
+    padding: 12px;
+    background: var(--bg-accent-light);
+    border: 1px solid var(--border-color-light);
+    color: var(--primary-color);
+    font-family: var(--font-body);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.booking-form .form-input:focus,
+.booking-form .form-textarea:focus {
+    outline: none;
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+}
+
+.booking-form .form-textarea {
+    resize: vertical;
+}
+
+.booking-form .submit-btn {
+    padding: 15px 30px;
+    background: transparent;
+    border: 1px solid var(--border-color-strong);
+    color: var(--primary-color);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.booking-form .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.booking-form .submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+    transition: left 0.5s ease;
+    z-index: -1;
+}
+
+.booking-form .submit-btn:hover:not(:disabled) {
+    color: var(--bg-dark);
+}
+
+.booking-form .submit-btn:hover:not(:disabled)::before {
+    left: 0;
+}
+
+/* --- New CSS for Booking Form Alignment --- */
+/* (Keeping this for desktop) */
+.booking-form .form-group {
+    flex-direction: row; 
+    align-items: center; 
+    gap: 15px;
+}
+.booking-form .form-label {
+    flex-basis: 180px; 
+    flex-shrink: 0;
+    margin-bottom: 0; 
+    text-align: right;
+    font-size: 12px;
+}
+.booking-form .form-input,
+.booking-form .form-textarea {
+    flex-grow: 1; 
+}
+.booking-form .form-group:has(textarea) {
+    align-items: flex-start;
+}
+.booking-form .form-group:has(textarea) .form-label {
+    padding-top: 12px; 
+}
+/* --- End of New CSS --- */
+
+.form-response {
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 1px;
+    display: none;
+    margin-top: 10px;
+}
+
+.form-response.success {
+    display: block;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    color: var(--success-text);
+}
+
+.form-response.error {
+    display: block;
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
+    color: var(--error-text);
+}
+
+/* Contact Modal */
+.contact-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 7, 5, 0.95); /* Keep rgba */
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    overflow-y: auto;
+}
+
+.contact-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.contact-form-container {
+    background: var(--bg-light);
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    border: 1px solid var(--border-color-medium);
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.4s ease;
+    margin: auto;
+}
+
+.contact-modal.active .contact-form-container {
+    transform: scale(1);
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+}
+
+.form-input,
+.form-textarea {
+    padding: 12px;
+    background: var(--bg-accent-light);
+    border: 1px solid var(--border-color-light);
+    color: var(--primary-color);
+    font-family: var(--font-body);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-medium);
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.submit-btn {
+    padding: 15px 30px;
+    background: transparent;
+    border: 1px solid var(--border-color-strong);
+    color: var(--primary-color);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+    transition: left 0.5s ease;
+    z-index: -1;
+}
+
+.submit-btn:hover {
+    color: var(--bg-dark);
+}
+
+.submit-btn:hover::before {
+    left: 0;
+}
+
+/* Contact Section */
+.contact {
+    background: var(--bg-dark);
+    text-align: center;
+}
+
+.connect-btn {
+    display: inline-block;
+    padding: 20px 60px;
+    background: transparent;
+    border: 1px solid var(--border-color-strong);
+    color: var(--primary-color);
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.6s ease;
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.connect-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+    transition: left 0.6s ease;
+    z-index: -1;
+}
+
+.connect-btn:hover {
+    color: var(--bg-dark);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(202, 158, 122, 0.3); /* Keep rgba */
+}
+
+.connect-btn:hover::before {
+    left: 0;
+}
+
+/* Photo Gallery Section */
+.gallery {
+    background: var(--bg-light);
+    min-height: 80vh;
+    padding: 120px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-content {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.gallery-title {
+    font-size: 64px;
+    font-weight: 300;
+    margin-bottom: 60px;
+    letter-spacing: 2px;
+    color: var(--primary-color);
+}
+
+.carousel-container {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-accent-light);
+    border: 1px solid var(--border-color-light);
+    height: auto; /* Changed for responsive */
+    aspect-ratio: 16 / 9; /* Changed for responsive */
+    width: 100%;
+}
+
+.carousel-inner {
+    display: flex;
+    transition: transform 0.7s ease-in-out;
+    height: 100%;
+}
+
+.carousel-item {
+    min-width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(17, 7, 5, 0.8), rgba(135, 100, 75, 0.2)); /* Keep rgba */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 24px;
+    letter-spacing: 2px;
+    overflow: hidden;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Changed back based on feedback */
+    object-position: center;
+}
+
+.carousel-control { /* Re-enabled carousel controls */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(202, 158, 122, 0.3); /* Keep rgba */
+    color: var(--primary-color);
+    width: 50px;
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    z-index: 10;
+    padding: 0;
+}
+
+.carousel-control:hover {
+    background: rgba(202, 158, 122, 0.5); /* Keep rgba */
+    color: var(--bg-dark);
+}
+
+.carousel-control.prev {
+    left: 20px;
+}
+
+.carousel-control.next {
+    right: 20px;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(202, 158, 122, 0.4); /* Keep rgba */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(202, 158, 122, 0.6); /* Keep rgba */
+}
+
+.dot.active {
+    background: var(--primary-color);
+    transform: scale(1.3);
+}
+
+/* Footer Section */
+.footer {
+    background: #0a0402; /* Very dark, keep specific */
+    border-top: 1px solid var(--border-color-light);
+    padding: 40px 80px;
+    margin-top: 60px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.footer-copyright {
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--primary-color);
+    font-weight: 300;
+}
+
+.footer-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.footer-link {
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-family: var(--font-heading);
+}
+
+.footer-link:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+.divider {
+    color: rgba(202, 158, 122, 0.5); /* Keep rgba */
+    font-size: 12px;
+}
+
+.footer-right {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.social-icons {
+    display: flex;
+    gap: 25px;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color-medium);
+    border-radius: 50%;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 16px;
+}
+
+.social-icon:hover {
+    border-color: var(--border-color-strong);
+    background: var(--bg-accent-strong);
+    transform: translateY(-5px);
+}
+
+/* Keep specific social colors */
+.social-icon.instagram:hover {
+    background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+    color: #fff;
+    border-color: transparent;
+}
+.social-icon.youtube:hover {
+    background: #ff0000;
+    color: #fff;
+    border-color: transparent;
+}
+.social-icon.linkedin:hover {
+    background: #0077b5;
+    color: #fff;
+    border-color: transparent;
+}
+.social-icon.whatsapp:hover {
+    background: #25d366;
+    color: #fff;
+    border-color: transparent;
+}
+
+/* Policy Modal Styles */
+.policy-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 7, 5, 0.95); /* Keep rgba */
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    overflow: hidden;
+    padding: 40px 20px;
+}
+
+.policy-modal.active {
+    display: flex;
+    opacity: 1;
+    overflow-y: auto;
+}
+
+.policy-content {
+    background: var(--bg-light);
+    padding: 50px;
+    max-width: 800px;
+    width: 100%;
+    border: 1px solid var(--border-color-medium);
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.4s ease;
+    margin: auto;
+    border-radius: 8px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.policy-modal.active .policy-content {
+    transform: scale(1);
+}
+
+.policy-title {
+    font-size: 32px;
+    font-weight: 300;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 20px;
+}
+
+.policy-body {
+    color: var(--primary-color);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.policy-body h3 {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--primary-color);
+    margin-top: 25px;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.policy-body h4 {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--primary-light);
+    margin-top: 15px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.policy-body p {
+    margin-bottom: 15px;
+    opacity: 0.85;
+    text-align: justify;
+}
+
+.policy-body ul {
+    margin-left: 30px;
+    margin-bottom: 15px;
+}
+
+.policy-body ul li {
+    margin-bottom: 10px;
+    opacity: 0.85;
+}
+
+.policy-body ul ul {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.policy-body ul ul li {
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+/* Scrollbar styling for policy modal */
+.policy-content::-webkit-scrollbar {
+    width: 8px;
+}
+.policy-content::-webkit-scrollbar-track {
+    background: rgba(202, 158, 122, 0.05); /* Keep rgba */
+    border-radius: 10px;
+}
+.policy-content::-webkit-scrollbar-thumb {
+    background: rgba(202, 158, 122, 0.3); /* Keep rgba */
+    border-radius: 10px;
+}
+.policy-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(202, 158, 122, 0.5); /* Keep rgba */
+}
+
+/* --- START: Mobile Responsive Code --- */
+/* (Includes previous mobile fixes) */
+
+/* 1. Style the new Nav Logo */
+.nav-logo {
+    display: none; /* Keep hidden */
+    /* Other styles removed as logo is not displayed */
+}
+
+/* 2. Style the new Nav Toggle (Hamburger Button) */
+.nav-toggle {
+    display: none; /* Hide on desktop */
+    background: transparent;
+    border: 1px solid var(--border-color-medium);
+    color: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+/* 3. Main Media Query for Tablets and Phones (992px and smaller) */
+@media (max-width: 992px) {
+    /* --- NAVIGATION --- */
+    .nav {
+        padding: 20px 40px;
+        height: 80px;
+        justify-content: flex-end; /* Keep hamburger right */
+    }
+
+    /* .nav-logo rule removed as it's always hidden */
+
+    .nav-toggle {
+        display: block; /* Show hamburger */
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: var(--bg-dark);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-links.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    .nav-links a {
+        font-size: 20px;
+    }
+
+    /* --- HERO --- */
+    .hero {
+        margin-top: 80px;
+        height: 50vh; /* Shorter hero */
+    }
+
+    /* --- HERO TEXT --- */
+    .hero-title {
+        font-size: 60px;
+        letter-spacing: 8px;
+        margin-bottom: 20px; /* Corrected margin */
+        margin-left: 0;
+    }
+
+    .hero-subtitle {
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    /* --- GENERAL SECTIONS --- */
+    .section {
+        padding: 80px 40px;
+        min-height: auto;
+    }
+
+    .section-title {
+        font-size: 42px;
+    }
+
+    .section-text {
+        font-size: 18px;
+    }
+
+    /* --- GRIDS --- */
+    .companies-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    /* --- BOOKING MODAL --- */
+    .modal-content {
+        width: 90%;
+        padding: 30px 20px;
     }
     
-    return dayEl;
-}
-
-// ---- NEW CODE ----
-function selectDate(date) {
-    // Manually format as YYYY-MM-DD in local time to avoid timezone shift
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    selectedDate = `${year}-${month}-${day}`;
-    
-    renderCalendar();
-    generateTimeSlots(date);
-}
-
-
-function generateTimeSlots(date) {
-    const container = document.getElementById('timeSlotsContainer');
-    const slotsDiv = document.getElementById('timeSlots');
-    const dateDisplay = document.getElementById('selectedDateDisplay');
-    
-    if (!container || !slotsDiv || !dateDisplay) return;
-    
-    // Format date for display
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    dateDisplay.textContent = date.toLocaleDateString('en-US', options);
-    
-    // Generate time slots (9 AM to 5 PM)
-    const slots = [];
-    for (let hour = 9; hour <= 17; hour++) {
-        for (let minute of [0, 30]) {
-            if (hour === 17 && minute === 30) break;
-            
-            const timeStr = hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
-            const displayTime = formatTime(hour, minute);
-            slots.push({ value: timeStr, display: displayTime });
-        }
+    .appointment-options {
+        flex-direction: column;
+        gap: 10px;
     }
-    
-    slotsDiv.innerHTML = '';
-    slots.forEach(slot => {
-        const slotEl = document.createElement('div');
-        slotEl.className = 'time-slot';
-        slotEl.textContent = slot.display;
-        slotEl.dataset.time = slot.value;
-        
-        if (selectedTime === slot.value) {
-            slotEl.classList.add('selected');
-        }
-        
-        slotEl.addEventListener('click', () => selectTime(slot.value, slotEl));
-        slotsDiv.appendChild(slotEl);
-    });
-    
-    container.style.display = 'block';
-}
 
-function formatTime(hour, minute) {
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
-    return displayHour + ':' + minute.toString().padStart(2, '0') + ' ' + period;
-}
-
-function selectTime(time, element) {
-    selectedTime = time;
-    document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
-    element.classList.add('selected');
-    
-    // Auto-advance to step 3 after short delay
-    setTimeout(() => showStep(3), 500);
-}
-
-// Calendar navigation
-const prevMonthBtn = document.getElementById('prevMonth');
-const nextMonthBtn = document.getElementById('nextMonth');
-
-if (prevMonthBtn) {
-    prevMonthBtn.addEventListener('click', () => {
-        currentMonth.setMonth(currentMonth.getMonth() - 1);
-        renderCalendar();
-    });
-}
-
-if (nextMonthBtn) {
-    nextMonthBtn.addEventListener('click', () => {
-        currentMonth.setMonth(currentMonth.getMonth() + 1);
-        renderCalendar();
-    });
-}
-
-// Back button
-const backBtn = document.getElementById('backBtn');
-if (backBtn) {
-    backBtn.addEventListener('click', () => {
-        showStep(2);
-    });
-}
-
-// Update summary
-function updateSummary() {
-    const serviceTitle = document.getElementById('serviceTitle');
-    const summaryService = document.getElementById('summaryService');
-    const summaryDuration = document.getElementById('summaryDuration');
-    const summaryDateTime = document.getElementById('summaryDateTime');
-    
-    if (summaryService && serviceTitle) {
-        summaryService.textContent = serviceTitle.textContent;
+    /* Undo desktop form alignment for mobile */
+    .booking-form .form-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
-    
-    if (summaryDuration && selectedDuration) {
-        summaryDuration.textContent = selectedDuration + ' minutes';
+
+    .booking-form .form-label {
+        flex-basis: auto;
+        text-align: left;
+        font-size: 11px;
     }
-    
-    if (summaryDateTime && selectedDate && selectedTime) {
-        const date = new Date(selectedDate);
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        const dateStr = date.toLocaleDateString('en-US', options);
-        
-        const timeParts = selectedTime.split(':');
-        const hour = parseInt(timeParts[0]);
-        const minute = parseInt(timeParts[1]);
-        const timeStr = formatTime(hour, minute);
-        
-        summaryDateTime.textContent = dateStr + ' at ' + timeStr;
+
+    .booking-form .form-group:has(textarea) .form-label {
+        padding-top: 0;
+    }
+
+    /* --- FOOTER --- */
+    .footer {
+        padding: 40px;
+    }
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+    .footer-left {
+        align-items: center;
     }
 }
 
-// Booking form submission to n8n
-const bookingForm = document.getElementById('bookingForm');
-const n8nWebhookUrl = 'https://n8n.srv1068626.hstgr.cloud/webhook/51a45f27-5307-4454-b452-937d18a5d0f7';
+/* 4. Extra Media Query for Small Phones (576px and smaller) */
+@media (max-width: 576px) {
+    .nav {
+        padding: 20px;
+    }
 
-if (bookingForm) {
-    bookingForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBooking');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
-        const responseDiv = document.getElementById('bookingResponse');
-        
-        if (!submitBtn || !btnText || !btnLoading || !responseDiv) return;
-        
-        const serviceTitleEl = document.getElementById('serviceTitle');
-        const nameEl = document.getElementById('bookingName');
-        const emailEl = document.getElementById('bookingEmail');
-        const phoneEl = document.getElementById('bookingPhone');
-        const messageEl = document.getElementById('bookingMessage');
-        
-        // Collect form data
-        const formData = {
-            service: currentService,
-            serviceTitle: serviceTitleEl ? serviceTitleEl.textContent : '',
-            duration: selectedDuration + ' minutes',
-            date: selectedDate,
-            time: selectedTime,
-            name: nameEl ? nameEl.value : '',
-            email: emailEl ? emailEl.value : '',
-            phone: phoneEl ? phoneEl.value : '',
-            message: messageEl ? messageEl.value : '',
-            timestamp: new Date().toISOString()
-        };
-        
-        // Disable button and show loading
-        submitBtn.disabled = true;
-        btnText.style.display = 'none';
-        btnLoading.style.display = 'inline';
-        responseDiv.style.display = 'none';
-        
-        try {
-            const response = await fetch(n8nWebhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            if (response.ok) {
-                responseDiv.textContent = 'Appointment request submitted successfully! We will contact you soon to confirm.';
-                responseDiv.className = 'form-response success';
-                bookingForm.reset();
-                
-                // Close modal after 3 seconds
-                setTimeout(() => {
-                    serviceModal.classList.remove('active');
-                    showStep(1);
-                }, 3000);
-            } else {
-                throw new Error('Failed to submit');
-            }
-        } catch (error) {
-            console.error('Error submitting booking:', error);
-            responseDiv.textContent = 'Error submitting appointment. Please try again or contact us directly.';
-            responseDiv.className = 'form-response error';
-        } finally {
-            // Re-enable button
-            submitBtn.disabled = false;
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
-        }
-    });
+    .section {
+        padding: 60px 20px;
+    }
+
+    .hero-title {
+        font-size: 42px;
+        letter-spacing: 6px;
+    }
+
+    .section-title {
+        font-size: 32px;
+    }
+
+    .section-text {
+        font-size: 16px;
+    }
+
+    .time-slots {
+        grid-template-columns: 1fr 1fr;
+    }
 }
-
-// Contact form modal
-const contactModal = document.getElementById('contactModal');
-const openContactForm = document.getElementById('openContactForm');
-const closeContactModal = document.getElementById('closeContactModal');
-
-if (openContactForm) {
-    openContactForm.addEventListener('click', () => {
-        contactModal.classList.add('active');
-    });
-}
-
-if (closeContactModal) {
-    closeContactModal.addEventListener('click', () => {
-        contactModal.classList.remove('active');
-    });
-}
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-    if (e.target === serviceModal) {
-        serviceModal.classList.remove('active');
-    }
-    if (e.target === contactModal) {
-        contactModal.classList.remove('active');
-    }
-});
-
-// Contact form submission
-const contactForm = document.getElementById('contactForm');
-// --- PASTE YOUR NEW N8N WEBHOOK URL HERE ---
-const n8nContactWebhookUrl = 'https://n8n.srv1068626.hstgr.cloud/webhook/51a45f27-5307-4454-b452-937d18a5d0f7';
-// ------------------------------------------
-
-if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) { // <-- Made this async
-        e.preventDefault();
-        
-        // Get the submit button to show a loading state
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-
-        const nameEl = document.getElementById('name');
-        const emailEl = document.getElementById('email');
-        const phoneEl = document.getElementById('phone');
-        const companyEl = document.getElementById('company');
-        const messageEl = document.getElementById('message');
-        
-        const formData = {
-            name: nameEl ? nameEl.value : '',
-            email: emailEl ? emailEl.value : '',
-            phone: phoneEl ? phoneEl.value : '',
-            company: companyEl ? companyEl.value : '',
-            message: messageEl ? messageEl.value : '',
-            timestamp: new Date().toISOString()
-        };
-
-        try {
-            const response = await fetch(n8nContactWebhookUrl, { // <-- Use the new webhook URL
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                alert('Thank you for reaching out! We will get back to you shortly.');
-                contactModal.classList.remove('active');
-                contactForm.reset();
-            } else {
-                throw new Error('Failed to submit form');
-            }
-        } catch (error) {
-            console.error('Error submitting contact form:', error);
-            alert('There was an error submitting your message. Please try again.');
-        } finally {
-            // Re-enable the button
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send Message';
-        }
-    });
-}
-// Carousel functionality
-let currentSlide = 0;
-const carousel = document.getElementById('carouselInner');
-const dots = document.querySelectorAll('.dot');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-
-if (carousel && dots.length > 0) {
-    const totalSlides = dots.length;
-
-    function goToSlide(n) {
-        currentSlide = (n + totalSlides) % totalSlides;
-        carousel.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
-        updateDots();
-    }
-
-    function updateDots() {
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentSlide);
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            goToSlide(currentSlide + 1);
-        });
-    }
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            goToSlide(currentSlide - 1);
-        });
-    }
-
-    dots.forEach(dot => {
-        dot.addEventListener('click', () => {
-            goToSlide(parseInt(dot.dataset.index));
-        });
-    });
-
-    // Auto-advance carousel every 5 seconds
-    setInterval(() => {
-        goToSlide(currentSlide + 1);
-    }, 5000);
-}
-
-// Footer Social Links and Terms/Privacy Modal
-document.addEventListener('DOMContentLoaded', function() {
-    const termsLink = document.getElementById('termsLink');
-    const privacyLink = document.getElementById('privacyLink');
-    const termsModal = document.getElementById('termsModal');
-    const privacyModal = document.getElementById('privacyModal');
-    const closeTermsModal = document.getElementById('closeTermsModal');
-    const closePrivacyModal = document.getElementById('closePrivacyModal');
-
-    if (termsLink && termsModal) {
-        termsLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            termsModal.classList.add('active');
-        });
-    }
-
-    if (privacyLink && privacyModal) {
-        privacyLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            privacyModal.classList.add('active');
-        });
-    }
-
-    if (closeTermsModal && termsModal) {
-        closeTermsModal.addEventListener('click', () => {
-            termsModal.classList.remove('active');
-        });
-    }
-
-    if (closePrivacyModal && privacyModal) {
-        closePrivacyModal.addEventListener('click', () => {
-            privacyModal.classList.remove('active');
-        });
-    }
-
-    // Close policy modals when clicking outside
-    window.addEventListener('click', (e) => {
-        if (termsModal && e.target === termsModal) {
-            termsModal.classList.remove('active');
-        }
-        if (privacyModal && e.target === privacyModal) {
-            privacyModal.classList.remove('active');
-        }
-        
-    });
-// --- ADD THIS NEW CODE --- //
-
-// Handle the "please contact us" link in the policy modals
-const policyContactLink = document.getElementById('policyContactLink');
-const contactModal = document.getElementById('contactModal'); // We need this again
-
-if (policyContactLink && contactModal) {
-    policyContactLink.addEventListener('click', (e) => {
-        e.preventDefault(); // Stop the link from jumping to the top
-
-        // Close any open policy modals
-        if (termsModal) termsModal.classList.remove('active');
-        if (privacyModal) privacyModal.classList.remove('active');
-
-        // Open the contact modal
-        contactModal.classList.add('active');
-    });
-}
-// --- ADD THIS NEW CODE --- //
-
-// Handle the "please contact us" link in the Terms modal
-const termsContactLink = document.getElementById('termsContactLink');
-
-if (termsContactLink && contactModal && termsModal) {
-    termsContactLink.addEventListener('click', (e) => {
-        e.preventDefault(); // Stop the link from jumping
-
-        // Close the Terms modal
-        termsModal.classList.remove('active');
-
-        // Open the contact modal
-        contactModal.classList.add('active');
-    });
-}
-
-// --- END OF NEW CODE --- //
-
-});
-
+/* --- END: Mobile Responsive Code --- */
